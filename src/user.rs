@@ -40,18 +40,19 @@ pub struct UserDTO {
     pub role: String,
 }
 
-impl UserDTO {
-    pub fn new<N, P, R>(name: N, password: P, birth_date: Date, role: R) -> Self
-    where
-        N: Into<String>,
-        P: Into<String>,
-        R: Into<String>,
-    {
-        Self {
-            name: name.into(),
-            password: password.into(),
-            birth_date,
-            role: role.into(),
-        }
-    }
-}
+// impl UserDTO {
+//     #[warn(dead_code)]
+//     pub fn new<N, P, R>(name: N, password: P, birth_date: Date, role: R) -> Self
+//     where
+//         N: Into<String>,
+//         P: Into<String>,
+//         R: Into<String>,
+//     {
+//         Self {
+//             name: name.into(),
+//             password: password.into(),
+//             birth_date,
+//             role: role.into(),
+//         }
+//     }
+// }
