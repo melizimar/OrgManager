@@ -64,20 +64,20 @@ mod test {
     #[test]
     fn test_user_creation_success() {
         let user = User::new(
-            "Matheus",
-            "@aksjdcm@123",
-            time::macros::date!(1999 - 10 - 12),
-            "Administrator",
+            "User1",
+            "Password1",
+            time::macros::date!(1990 - 01 - 01),
+            "Admin",
         );
 
         assert_eq!(
             user,
             User {
-                id: user.id.clone(),
-                name: "Matheus".to_string(),
-                password: "@aksjdcm@123".to_string(),
-                birth_date: time::macros::date!(1999 - 10 - 12),
-                role: "Administrator".to_string(),
+                id: user.id,
+                name: "User1".to_string(),
+                password: "Password1".to_string(),
+                birth_date: time::macros::date!(1990 - 01 - 01),
+                role: "Admin".to_string(),
             }
         );
     }
@@ -85,21 +85,20 @@ mod test {
     #[test]
     fn test_userdto_creation_success() {
         let user_dto = UserDTO::new(
-            "Matheus",
-            "@aksjdcm@123",
-            time::macros::date!(1999 - 10 - 12),
-            "Administrator",
+            "User1",
+            "Password1",
+            time::macros::date!(1990 - 01 - 01),
+            "Admin",
         );
 
         assert_eq!(
             user_dto,
             UserDTO {
-                name: "Matheus".to_string(),
-                password: "@aksjdcm@123".to_string(),
-                birth_date: time::macros::date!(1999 - 10 - 12),
-                role: "Administrator".to_string(),
+                name: "User1".to_string(),
+                password: "Password1".to_string(),
+                birth_date: time::macros::date!(1990 - 01 - 01),
+                role: "Admin".to_string(),
             }
         );
-
     }
 }

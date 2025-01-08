@@ -2,18 +2,23 @@ mod user;
 
 use std::{collections::HashMap, sync::Arc};
 
-use uuid::Uuid;
 use serde_json::json;
 use time::macros::date;
 use tokio::sync::RwLock;
 use user::{User, UserDTO};
+use uuid::Uuid;
+
+use hyper::Response;
+
+use tower::ServiceExt;
 
 use axum::{
-    Router,
-    http::StatusCode,
-    response::IntoResponse,
+    body::Body,
     extract::{Json, Path, State},
+    http::{Request, StatusCode},
+    response::IntoResponse,
     routing::{delete, get, post, put},
+    Router,
 };
 
 type AppState = Arc<RwLock<HashMap<Uuid, User>>>;
@@ -22,22 +27,11 @@ type AppState = Arc<RwLock<HashMap<Uuid, User>>>;
 async fn main() {
     let mut users: HashMap<Uuid, User> = HashMap::new();
 
-    let user = User::new(
-        "Matheus",
-        "Senha123",
-        date!(1999 - 10 - 12),
-        "Administrator",
-    );
+    let user1 = User::new("User1", "Password1", date!(1990 - 01 - 01), "Admin");
+    let user2 = User::new("User2", "Password2", date!(1995 - 05 - 05), "Standard");
 
-    println!("http://localhost:3000/users/{}", &user.id);
-
-    users.insert(user.id, user);
-
-    let user1 = User::new("Teste", "Senha123", date!(1999 - 10 - 15), "Padrão");
-
-    println!("http://localhost:3000/users/{}", &user1.id);
-
-    users.insert(user1.id, user1);
+    users.insert(user1.id, user1.clone());
+    users.insert(user2.id, user2.clone());
 
     let shared_state = Arc::new(RwLock::new(users));
 
@@ -59,8 +53,18 @@ async fn hello() -> impl IntoResponse {
 }
 
 async fn get_users(State(users): State<AppState>) -> impl IntoResponse {
-    let user_list: Vec<User> = users.read().await.values().cloned().collect();
-    (StatusCode::OK, Json(user_list))
+    match users.try_read() {
+        Ok(state) => {
+            let user_list: Vec<User> = state.values().cloned().collect();
+            Ok((StatusCode::OK, Json(user_list)))
+        }
+        Err(err) => Err((
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(
+                json!({"error": format!("Could not access state, INTERNAL_SERVER_ERROR: {}", err)}),
+            ),
+        )),
+    }
 }
 
 async fn get_user_by_id(
@@ -107,4 +111,66 @@ async fn delete_user(
             Json(json!({"message": "User not found."})),
         )),
     }
+}
+
+#[tokio::test]
+async fn test_get_users_route() {
+    let mut users: HashMap<Uuid, User> = HashMap::new();
+
+    let user1 = User::new("User1", "Password1", date!(1990 - 01 - 01), "Admin");
+    let user2 = User::new("User2", "Password2", date!(1995 - 05 - 05), "Standard");
+
+    users.insert(user1.id, user1.clone());
+    users.insert(user2.id, user2.clone());
+
+    let shared_state = Arc::new(RwLock::new(users));
+
+    // Criar o router
+    let app = Router::new()
+        .route("/users", get(get_users))
+        .with_state(shared_state);
+
+    // Simular requisição GET para a rota /users
+    let request = Request::builder()
+        .uri("/users")
+        .method("GET")
+        .body(Body::empty())
+        .unwrap();
+
+    let response: Response<Body> = app.clone().oneshot(request).await.unwrap();
+
+    // Verificar o status HTTP
+    assert_eq!(response.status(), StatusCode::OK);
+}
+
+#[tokio::test]
+async fn test_delete_user_route() {
+    let mut users: HashMap<Uuid, User> = HashMap::new();
+
+    let user1 = User::new("User1", "Password1", date!(1990 - 01 - 01), "Admin");
+    let user2 = User::new("User2", "Password2", date!(1995 - 05 - 05), "Standard");
+
+    users.insert(user1.id, user1.clone());
+    users.insert(user2.id, user2.clone());
+
+    let shared_state = Arc::new(RwLock::new(users));
+
+    // Criar o router
+    let app = Router::new()
+        .route("/users/{uuid}", delete(delete_user))
+        .with_state(shared_state);
+
+    let uri = format!("/users/{}", user1.id);
+    // Simular requisição GET para a rota /users
+    let request = Request::builder()
+        .uri(&uri)
+        .method("DELETE")
+        .body(Body::empty())
+        .unwrap();
+
+    let response: Response<Body> = app.clone().oneshot(request).await.unwrap();
+
+    println!("TTESTE");
+    // Verificar o status HTTP
+    assert_eq!(response.status(), StatusCode::NO_CONTENT);
 }
