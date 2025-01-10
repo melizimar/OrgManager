@@ -11,6 +11,7 @@ use serde_json::json;
 
 use uuid::Uuid;
 
+#[allow(unused)]
 use axum::{
     body::Body,
     extract::{Json, Multipart, Path, State},
