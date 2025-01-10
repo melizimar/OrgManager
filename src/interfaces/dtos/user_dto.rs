@@ -12,8 +12,8 @@ pub struct UserDTO {
     pub role: String,
 }
 
+#[allow(unused)]
 impl UserDTO {
-    #[warn(dead_code)]
     pub fn new<N, P, R>(name: N, password: P, birth_date: Date, role: R) -> Self
     where
         N: Into<String>,
