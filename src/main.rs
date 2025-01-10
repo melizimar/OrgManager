@@ -27,7 +27,11 @@ use axum::{
     Router,
 };
 
-type AppState = Arc<RwLock<HashMap<Uuid, User>>>;
+#[derive(Clone)]
+struct AppState {
+    inmemory_state: Arc<RwLock<HashMap<Uuid, User>>>,
+    //cache_state: Arc<String>,
+}
 
 #[tokio::main]
 async fn main() {
@@ -39,7 +43,9 @@ async fn main() {
     users.insert(user1.id, user1.clone());
     users.insert(user2.id, user2.clone());
 
-    let shared_state_users = Arc::new(RwLock::new(users));
+    let shared_state = AppState {
+        inmemory_state: Arc::new(RwLock::new(users)),
+    };
 
     let app = Router::new()
         .route("/", get(hello))
@@ -47,9 +53,9 @@ async fn main() {
         .route("/users/{uuid}", get(get_user_by_id))
         .route("/users", post(create_user))
         .route("/users", put(update_user))
-        .route("/users/import", post(import_users_by_csv))
         .route("/users/{uuid}", delete(delete_user))
-        .with_state(shared_state_users);
+        .route("/users/import", post(import_users_by_csv))
+        .with_state(shared_state);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     axum::serve(listener, app).await.unwrap();
@@ -60,7 +66,7 @@ async fn hello() -> impl IntoResponse {
 }
 
 async fn get_users(State(users): State<AppState>) -> impl IntoResponse {
-    match users.try_read() {
+    match users.inmemory_state.try_read() {
         Ok(state) => {
             let user_list: Vec<User> = state.values().cloned().collect();
             Ok((StatusCode::OK, Json(user_list)))
@@ -78,7 +84,7 @@ async fn get_user_by_id(
     State(users): State<AppState>,
     Path(user_uuid): Path<Uuid>,
 ) -> impl IntoResponse {
-    match users.read().await.get(&user_uuid) {
+    match users.inmemory_state.read().await.get(&user_uuid) {
         Some(user) => Ok((StatusCode::OK, Json(user.clone()))),
         None => Err((
             StatusCode::NOT_FOUND,
@@ -98,7 +104,7 @@ async fn create_user(
         new_user.role,
     );
 
-    users.write().await.insert(user.id, user.clone());
+    users.inmemory_state.write().await.insert(user.id, user.clone());
 
     (StatusCode::CREATED, Json(user))
 }
@@ -154,7 +160,7 @@ async fn delete_user(
     State(users): State<AppState>,
     Path(user_uuid): Path<Uuid>,
 ) -> impl IntoResponse {
-    match users.write().await.remove(&user_uuid) {
+    match users.inmemory_state.write().await.remove(&user_uuid) {
         Some(_user) => Ok(StatusCode::NO_CONTENT),
         None => Err((
             StatusCode::NOT_FOUND,
@@ -173,12 +179,14 @@ async fn test_get_users_route() {
     users.insert(user1.id, user1.clone());
     users.insert(user2.id, user2.clone());
 
-    let shared_state_users = Arc::new(RwLock::new(users));
+    let shared_state = AppState {
+        inmemory_state: Arc::new(RwLock::new(users)),
+    };
 
     // Criar o router
     let app = Router::new()
         .route("/users", get(get_users))
-        .with_state(shared_state_users);
+        .with_state(shared_state);
 
     // Simular requisição GET para a rota /users
     let request = Request::builder()
@@ -203,12 +211,14 @@ async fn test_delete_user_route() {
     users.insert(user1.id, user1.clone());
     users.insert(user2.id, user2.clone());
 
-    let shared_state_users = Arc::new(RwLock::new(users));
+    let shared_state = AppState {
+        inmemory_state: Arc::new(RwLock::new(users)),
+    };
 
     // Criar o router
     let app = Router::new()
         .route("/users/{uuid}", delete(delete_user))
-        .with_state(shared_state_users);
+        .with_state(shared_state);
 
     let uri = format!("/users/{}", user1.id);
     // Simular requisição GET para a rota /users
@@ -220,7 +230,7 @@ async fn test_delete_user_route() {
 
     let response: Response<Body> = app.clone().oneshot(request).await.unwrap();
 
-    println!("TTESTE");
+    println!("TESTE");
     // Verificar o status HTTP
     assert_eq!(response.status(), StatusCode::NO_CONTENT);
 }
