@@ -1,4 +1,8 @@
-mod user;
+mod domain;
+mod interfaces;
+
+use domain::entities::user::User;
+use interfaces::dtos::user_dto::UserDTO;
 
 use std::{collections::HashMap, sync::Arc};
 
@@ -11,7 +15,6 @@ use time::macros::date;
 use tokio::fs;
 use tokio::io::AsyncWriteExt;
 use tokio::sync::RwLock;
-use user::{User, UserDTO};
 use uuid::Uuid;
 
 use hyper::Response;
@@ -104,7 +107,11 @@ async fn create_user(
         new_user.role,
     );
 
-    users.inmemory_state.write().await.insert(user.id, user.clone());
+    users
+        .inmemory_state
+        .write()
+        .await
+        .insert(user.id, user.clone());
 
     (StatusCode::CREATED, Json(user))
 }
