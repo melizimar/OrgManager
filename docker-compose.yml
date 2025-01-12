@@ -1,0 +1,26 @@
+services:
+  app:
+    build:
+      context: .
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/db
+
+  postgres:
+    image: postgres:17.2
+    container_name: postgres_container
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: iv-FUp%'%NgXp~G9
+      POSTGRES_DB: db
+    #volumes:
+    #  - postgres_data:/var/lib/postgresql/data
+
+#volumes:
+#  postgres_data:
