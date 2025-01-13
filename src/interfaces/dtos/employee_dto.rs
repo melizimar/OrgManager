@@ -1,12 +1,10 @@
 use serde::{Deserialize, Serialize};
 use time::Date;
-use uuid::Uuid;
 
 time::serde::format_description!(date_format, Date, "[year]-[month]-[day]");
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-struct Employee {
-    pub id: Uuid,
+pub struct EmployeeDTO {
     pub name: String,
     #[serde(with = "date_format")]
     pub birth_date: Date,
@@ -16,7 +14,7 @@ struct Employee {
 }
 
 #[allow(unused)]
-impl Employee {
+impl EmployeeDTO {
     pub fn new<N, G, M, F>(
         name: N,
         birth_date: Date,
@@ -31,7 +29,6 @@ impl Employee {
         F: Into<String>,
     {
         Self {
-            id: Uuid::now_v7(),
             name: name.into(),
             birth_date,
             gender: gender.into(),
@@ -47,7 +44,7 @@ mod test {
 
     #[test]
     fn test_employee_creation_success() {
-        let employee = Employee::new(
+        let employee_dto = EmployeeDTO::new(
             "Employee1",
             time::macros::date!(1990 - 01 - 01),
             "Male",
@@ -56,9 +53,8 @@ mod test {
         );
 
         assert_eq!(
-            employee,
-            Employee {
-                id: employee.id,
+            employee_dto,
+            EmployeeDTO {
                 name: "Employee1".to_string(),
                 birth_date: time::macros::date!(1990 - 01 - 01),
                 gender: "Male".into(),

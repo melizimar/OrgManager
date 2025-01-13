@@ -7,9 +7,8 @@ use interfaces::http::routes::hello_routes::*;
 use interfaces::http::routes::user_routes::*;
 use interfaces::http::state::AppState;
 
-use std::{collections::HashMap, sync::Arc};
-
-use time::macros::date;
+use std::collections::HashMap;
+use std::sync::Arc;
 
 use tokio::sync::RwLock;
 
@@ -21,8 +20,8 @@ use axum::Router;
 async fn main() {
     let mut users: HashMap<Uuid, User> = HashMap::new();
 
-    let user1 = User::new("User1", "Password1", date!(1990 - 01 - 01), "Admin");
-    let user2 = User::new("User2", "Password2", date!(1995 - 05 - 05), "Standard");
+    let user1 = User::new("User1", "Password1", "Admin");
+    let user2 = User::new("User2", "Password2", "Standard");
 
     users.insert(user1.id, user1.clone());
     users.insert(user2.id, user2.clone());

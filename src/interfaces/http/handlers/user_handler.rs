@@ -68,12 +68,7 @@ pub async fn create_user(
     State(users): State<AppState>,
     Json(new_user): Json<UserDTO>,
 ) -> impl IntoResponse {
-    let user = User::new(
-        new_user.name,
-        new_user.password,
-        new_user.birth_date,
-        new_user.role,
-    );
+    let user = User::new(new_user.name, new_user.password, new_user.role);
 
     users
         .inmemory_state
@@ -148,8 +143,8 @@ pub async fn delete_user(
 async fn test_get_users_route() {
     let mut users: HashMap<Uuid, User> = HashMap::new();
 
-    let user1 = User::new("User1", "Password1", date!(1990 - 01 - 01), "Admin");
-    let user2 = User::new("User2", "Password2", date!(1995 - 05 - 05), "Standard");
+    let user1 = User::new("User1", "Password1", "Admin");
+    let user2 = User::new("User2", "Password2", "Standard");
 
     users.insert(user1.id, user1.clone());
     users.insert(user2.id, user2.clone());
@@ -180,8 +175,8 @@ async fn test_get_users_route() {
 async fn test_delete_user_route() {
     let mut users: HashMap<Uuid, User> = HashMap::new();
 
-    let user1 = User::new("User1", "Password1", date!(1990 - 01 - 01), "Admin");
-    let user2 = User::new("User2", "Password2", date!(1995 - 05 - 05), "Standard");
+    let user1 = User::new("User1", "Password1", "Admin");
+    let user2 = User::new("User2", "Password2", "Standard");
 
     users.insert(user1.id, user1.clone());
     users.insert(user2.id, user2.clone());
