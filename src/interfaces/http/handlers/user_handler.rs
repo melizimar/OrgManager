@@ -1,6 +1,6 @@
 use crate::domain::entities::user::User;
-use crate::interfaces::http::state::AppState;
 use crate::interfaces::dtos::user_dto::UserDTO;
+use crate::interfaces::http::state::AppState;
 
 use std::path;
 
@@ -18,7 +18,7 @@ use axum::{
     http::{Request, StatusCode},
     response::IntoResponse,
     routing::*,
-    Router
+    Router,
 };
 
 #[allow(unused)]

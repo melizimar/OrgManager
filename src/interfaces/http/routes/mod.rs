@@ -1,2 +1,2 @@
-pub mod user_routes;
 pub mod hello_routes;
+pub mod user_routes;

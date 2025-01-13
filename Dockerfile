@@ -23,6 +23,7 @@ FROM debian:bookworm
 # Instalar dependências básicas
 RUN apt-get update && apt-get install -y \
     ca-certificates && \
+    pkg-config \
     rm -rf /var/lib/apt/lists/* \
     libpq-dev \
     && apt-get clean

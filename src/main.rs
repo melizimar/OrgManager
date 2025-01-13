@@ -3,9 +3,9 @@ mod interfaces;
 
 use domain::entities::user::User;
 
-use interfaces::http::state::AppState;
 use interfaces::http::routes::hello_routes::*;
 use interfaces::http::routes::user_routes::*;
+use interfaces::http::state::AppState;
 
 use std::{collections::HashMap, sync::Arc};
 

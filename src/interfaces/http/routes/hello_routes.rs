@@ -4,6 +4,5 @@ use crate::interfaces::http::state::AppState;
 use axum::{routing::any, Router};
 
 pub fn hello_routes() -> Router<AppState> {
-    Router::new()
-        .route("/hello", any(hello))
+    Router::new().route("/hello", any(hello))
 }

@@ -1,6 +1,11 @@
-use axum::{Router, routing::{post, get, put, delete}};
-use crate::interfaces::http::handlers::user_handler::{get_users, get_user_by_id, create_user, update_user, delete_user, import_users_by_csv};
+use crate::interfaces::http::handlers::user_handler::{
+    create_user, delete_user, get_user_by_id, get_users, import_users_by_csv, update_user,
+};
 use crate::interfaces::http::state::AppState;
+use axum::{
+    routing::{delete, get, post, put},
+    Router,
+};
 
 pub fn user_routes() -> Router<AppState> {
     Router::new()
